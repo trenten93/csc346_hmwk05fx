@@ -30,6 +30,7 @@ public class Main extends Application {
         primaryStage.setHeight(530);
         primaryStage.setResizable(false);
         primaryStage.show();
+        // got button command working
     }
 
 
