@@ -24,9 +24,11 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        primaryStage.setTitle("Hello World");
-        primaryStage.setScene(new Scene(root, 300, 275));
+        Parent root = FXMLLoader.load(getClass().getResource("weatherFXApp2.fxml"));
+        primaryStage.setTitle("Weather Search Ultimate");
+        primaryStage.setScene(new Scene(root, 600, 545));
+        primaryStage.setHeight(530);
+        primaryStage.setResizable(false);
         primaryStage.show();
     }
 
@@ -42,11 +44,12 @@ public class Main extends Application {
 
 
         System.out.println("Would you like to search by zip or city and state? Enter 1 for zip or 2 for city and state: ");
-        String option = input.nextLine();//input.nextLine();
+        String option = "1";//input.nextLine();
+
 
         if(option.equals("1")){
             System.out.println("Enter a zipcode to search for: ");
-            String zipcodeSearch = input.next();//input.next();
+            String zipcodeSearch = "64506";//input.next();
             System.out.println("\n");
 
             String[] searchResults = getCityStateFromZip(conn,zipcodeSearch);
