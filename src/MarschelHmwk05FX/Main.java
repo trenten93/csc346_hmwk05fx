@@ -16,8 +16,11 @@ import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.parser.*;
 import sun.security.validator.ValidatorException;
+
+import javax.sound.midi.ControllerEventListener;
 import java.net.*;
 import java.net.MalformedURLException;
+
 
 public class Main extends Application {
     public static Weather cityWeather = new Weather();
@@ -29,17 +32,18 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root, 600, 545));
         primaryStage.setHeight(530);
         primaryStage.setResizable(false);
+
+
+
+
         primaryStage.show();
-        // got button command working
-        // lets see if i can do a commit without getting errors and wanting me to merge
-        // did remove sample with cmd
-        // test again
-        //tfiyrfiy
     }
 
 
     public static void main(String[] args) throws SQLException,Exception {
         launch(args);
+
+
         System.out.println("hello");
 
         Scanner input = new Scanner(System.in);

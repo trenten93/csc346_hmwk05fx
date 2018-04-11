@@ -28,6 +28,7 @@ public class Weather {
     }
 
 
+
     @Override
     public String toString(){
         String result = String.format("%s %s zip: %s at time: %s weather: %s temp of: %s humidity: %s Wind: %s percipitation 24hr: %s inches"
