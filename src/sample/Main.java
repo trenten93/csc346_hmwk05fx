@@ -31,6 +31,7 @@ public class Main extends Application {
         primaryStage.setResizable(false);
         primaryStage.show();
         // got button command working
+        // lets see if i can do a commit without getting errors and wanting me to merge
     }
 
 
