@@ -13,6 +13,7 @@ out/**/Main.class
 out/production/MarschelHmwk05/MarschelHmwk05/Main.class
 src/sample/sample.fxml
 src/sample
+src/sample/*
 
 
 #   You should modify the following line by removing the # sign.  This will
