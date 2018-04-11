@@ -5,6 +5,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.*;
+import org.jsoup.select.*;
+import java.sql.*;
+import java.util.*;
+import java.io.*;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.parser.*;
+import sun.security.validator.ValidatorException;
+import java.net.*;
+import java.net.MalformedURLException;
 
 public class Main extends Application {
 
