@@ -1,0 +1,22 @@
+#   Files that should not be uploaded to the repository
+
+*.class
+*.jar
+workspace.xml
+tasks.xml
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/vcs.xml
+.idea/workspace.xml
+WeatherData.xml
+out/**/Main.class
+out/production/MarschelHmwk05/MarschelHmwk05/Main.class
+
+
+#   You should modify the following line by removing the # sign.  This will
+#   block the credentials.xml file from being uploaded to the public repository.
+#   I am supplyling a generic credentials file in the repository.  You will
+#   need to modify the file by adding your own api key and the password.
+
+creds.txt
+
