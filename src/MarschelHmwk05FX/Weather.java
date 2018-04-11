@@ -35,4 +35,13 @@ public class Weather {
                 ,city,stateName,zip,observationTime,weather,tempString,relativeHumidity,windString,percipitation24Hr);
         return result;
     }
+
+    public String toStringFormat(){
+        String result = String.format("City: %s \nState: %s \nzip: %s \ntime: %s \nweather: %s \ntemp: %s \nhumidity: %s \nWind: %s \npercipitation 24hr: %s inches"
+                ,city,stateName,zip,observationTime,weather,tempString,relativeHumidity,windString,percipitation24Hr);
+
+
+        return result;
+    }
+
 }
