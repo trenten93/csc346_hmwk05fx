@@ -22,7 +22,6 @@ import java.net.*;
 import java.net.MalformedURLException;
 
 
-@SuppressWarnings("ALL")
 public class WeatherDriver {
     public static Weather cityWeather = new Weather();
     //public static Connection conn = connectToDB("zipDatabase.db");
@@ -146,12 +145,14 @@ public class WeatherDriver {
         try {
             File weatherData = new File("WeatherData.xml");
             PrintWriter output = new PrintWriter(weatherData);
+
             URL  url = new URL(urlString);
             BufferedReader input = new BufferedReader(new InputStreamReader( url.openStream()));
 
             while((line = input.readLine()) != null){
                 data += line +"\n";
-                output.println(line);
+
+                output.println(line);//remove after testing
             }
             input.close();
             output.close();
@@ -180,6 +181,51 @@ public class WeatherDriver {
             cityWeather.percipitation24Hr = e.select("precip_today_in").text();
         }
     }
+
+    public static void getLinkToRadarPage(String inputLink){
+        String imageLink = "";
+        Document doc = Jsoup.parse(inputLink,"",Parser.htmlParser());
+        Elements imageLinks = doc.select("img");
+
+        for(Element e:imageLinks){
+            String linkText = e.toString();
+            if(linkText.contains("radblast")){
+                System.out.println(e.attr("src"));
+                imageLink = "https:"+e.attr("src")+".jpg";
+            }
+
+        }
+
+        try {
+            URL  url = new URL(imageLink);
+
+            InputStream input = new BufferedInputStream(url.openStream());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+            byte[] buf = new byte[1024];
+            int n = 0;
+            while (-1!=(n=input.read(buf)))
+            {
+                out.write(buf, 0, n);
+            }
+
+            out.close();
+            input.close();
+            byte[] response = out.toByteArray();
+
+            FileOutputStream fos = new FileOutputStream("radarImage.jpg");
+            fos.write(response);
+            fos.close();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+
 
 
 }

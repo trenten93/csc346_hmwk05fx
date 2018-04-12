@@ -38,6 +38,9 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Window;
+import javafx.scene.image.*;
+import javafx.scene.image.Image;
+
 
 
 
@@ -82,7 +85,16 @@ public class Controller{
     public Tab cityTab;
 
     @FXML
-    public ImageView image;
+    public ImageView image1;
+
+    @FXML
+    public ImageView image2;
+
+    @FXML
+    public Button testButton;
+
+    @FXML
+    public ImageView radarTab1Image;
 
 
 
@@ -108,6 +120,7 @@ public class Controller{
         String output = WeatherDriver.cityWeather.toStringFormat();
 
         zipOutput.setText(output);
+
 
     }
 
@@ -161,14 +174,31 @@ public class Controller{
         }
     }
 
-    public void showList(){
-        stateComboBox.show();
-    }
-    public void hideList(){
-        stateComboBox.hide();
-    }
+    public void testButtonRun(){
+        String zip = zipField.getText();
+        String[] cityState = WeatherDriver.getCityStateFromZip(zip);
+        String cityFixed = cityState[0].replaceAll(" ", "%20");
+
+        String radarLink = String.format("https://www.wunderground.com/radar/radblast.asp?ID=eax&label=%s",cityFixed);
 
 
+        String radarLinkData = WeatherDriver.readFromURL(radarLink);
+
+        WeatherDriver.getLinkToRadarPage(radarLinkData);
+
+        Image radar1 = new Image("file:radarImage.jpg");
+
+        radarTab1Image.setImage(radar1);
+
+
+
+
+
+
+
+
+
+    }
 
 
 

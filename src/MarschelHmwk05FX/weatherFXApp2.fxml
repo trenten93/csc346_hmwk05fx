@@ -17,11 +17,13 @@
                         <TextField id="zipCodeInput" fx:id="zipField" layoutX="75.0" layoutY="72.0" onAction="#zipEnter" prefHeight="25.0" prefWidth="165.0" />
                         <Button fx:id="zipSearchButton" layoutX="263.0" layoutY="72.0" mnemonicParsing="false" onAction="#zipSearchButtonRun" prefHeight="25.0" prefWidth="84.0" text="Search" />
                         <TextArea id="tab1Output" fx:id="zipOutput" editable="false" layoutX="14.0" layoutY="109.0" prefHeight="347.0" prefWidth="333.0" />
-                        <ImageView fx:id="image" fitHeight="150.0" fitWidth="200.0" layoutX="396.0" layoutY="336.0" onMouseClicked="#imageClick" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="image1" fitHeight="150.0" fitWidth="200.0" layoutX="396.0" layoutY="336.0" onMouseClicked="#imageClick" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@wundergroundLogo_4c.png" />
                            </image>
                         </ImageView>
+                        <Button fx:id="testButton" layoutX="416.0" layoutY="31.0" mnemonicParsing="false" onAction="#testButtonRun" prefHeight="25.0" prefWidth="89.0" text="test radar" />
+                        <ImageView fx:id="radarTab1Image" fitHeight="187.0" fitWidth="244.0" layoutX="352.0" layoutY="109.0" pickOnBounds="true" preserveRatio="true" />
                      </children>
                   </AnchorPane>
             </content>
@@ -35,7 +37,7 @@
                         <TextField fx:id="cityField" layoutX="75.0" layoutY="72.0" onAction="#cityEnter" prefHeight="25.0" prefWidth="165.0" />
                         <Button fx:id="citySearchButton" layoutX="263.0" layoutY="72.0" mnemonicParsing="false" onAction="#citySearchButtonRun" prefHeight="25.0" prefWidth="84.0" text="Search" />
                         <TextArea fx:id="cityOutput" editable="false" layoutX="14.0" layoutY="109.0" prefHeight="347.0" prefWidth="333.0" />
-                        <ImageView fx:id="image" fitHeight="150.0" fitWidth="200.0" layoutX="396.0" layoutY="336.0" onMouseClicked="#imageClick" pickOnBounds="true" preserveRatio="true">
+                        <ImageView fx:id="image2" fitHeight="150.0" fitWidth="200.0" layoutX="396.0" layoutY="336.0" onMouseClicked="#imageClick" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@wundergroundLogo_4c.png" />
                            </image>
