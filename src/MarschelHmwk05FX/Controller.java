@@ -82,18 +82,26 @@ public class Controller{
 
 
 
+
+
     public void zipSearchButtonRun() {
         String zip = zipField.getText();
+        int zipInt = Integer.parseInt(zip);
 
-        //test
-        System.out.println("test reading url");
-        String test = WeatherDriver.readFromURL("https://www.wunderground.com/cgi-bin/findweather/getForecast" +
-                "?query=55555&btnWx=Go&vthost=&vt_language=&adtags=&brand=virtuallythere_jan3&select2=Select+mode");
-
-        //test
 
         String[] searchResults = WeatherDriver.getCityStateFromZip(zip);
-        String cityFixed = searchResults[0].replaceAll(" ", "_");
+
+        while(searchResults[0].equals("error") && searchResults[1].equals("error")){
+            zipInt ++;
+            System.out.println("fixing zip code");
+            zip = Integer.toString(zipInt);
+            searchResults = WeatherDriver.getCityStateFromZip(zip);
+        }
+
+        String cityFixed = ""; // test 58999
+
+        cityFixed = searchResults[0].replaceAll(" ", "_");
+
 
         String urlString = String.format("http://api.wunderground.com/api/%s/conditions/q/%s/%s.xml",key,searchResults[1],cityFixed);
         System.out.println(urlString);
@@ -109,9 +117,7 @@ public class Controller{
 
         zipOutput.setText(output);
 
-        System.out.println("yes");
         generateRadarImage(zip,1);
-        System.out.println("no");
         imageClickValid1 = true;
 
 
@@ -221,20 +227,20 @@ public class Controller{
 
         System.out.println(radarStationPage+"\n");
 
-        System.out.println("yessssssssssss4555");
         String radarStationPageData = WeatherDriver.readFromURL(radarStationPage);
-        System.out.println("yesss");
-        String stationId = WeatherDriver.findWeatherStationId(radarStationPageData);
-        System.out.println(stationId);
 
-        if(stationId.equalsIgnoreCase("null")){
-            System.out.println("NULLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
+        while(radarStationPageData.equalsIgnoreCase("error")){
             zipInt ++;
+            System.out.println(zipInt);
             zip = Integer.toString(zipInt);
             radarStationPage = formatStationString(zip);
             radarStationPageData = WeatherDriver.readFromURL(radarStationPage);
-            stationId = WeatherDriver.findWeatherStationId(radarStationPageData);
         }
+
+        String stationId = WeatherDriver.findWeatherStationId(radarStationPageData);
+        System.out.println(stationId);
+
+
 
         String radarLink = String.format("https://www.wunderground.com/radar/radblast.asp?ID=%s",stationId);
 

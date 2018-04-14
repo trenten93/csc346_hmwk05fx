@@ -112,10 +112,16 @@ public class WeatherDriver {
             }
             rs.close();
             stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("error in getCityStateFromZip");
+            zipInfo[0]="error";
+            zipInfo[1] = "error";
         }
         closeDB(conn);
+        if(zipInfo[0] == null || zipInfo[1] == null){
+            zipInfo[0] = "error";
+            zipInfo[1] = "error";
+        }
         return zipInfo;
     }
 
@@ -143,24 +149,32 @@ public class WeatherDriver {
         String data = "";
         String line;
         System.out.println(urlString);
-
         try {
             URL  url = new URL(urlString);
-
-
-            BufferedReader input = new BufferedReader(new InputStreamReader( url.openStream()));
-
+            BufferedReader input = null;
+            try {
+                input = new BufferedReader(new InputStreamReader( url.openStream()));
+            } catch (FileNotFoundException e) {
+                data = "error";
+                System.out.println(data);
+                return data;
+            }
             while((line = input.readLine()) != null){
                 data += line +"\n";
             }
             input.close();
         } catch (Exception e) {
-            System.out.println("death");
-            System.err.println(e.getMessage());
-            System.exit(1);
-            e.printStackTrace();
+            System.out.println(data);
+            data = "error";
+            return data;
         }
         return data;
+    }
+
+    public static String readFromUrlTest(String urlString){
+        String result = "";
+
+        return result;
     }
 
     public static void parseXmlString(String data){
@@ -222,33 +236,26 @@ public class WeatherDriver {
         String stationValue = "";
         Document doc = Jsoup.parse(data,"",Parser.htmlParser());
         String title = doc.title();
-        System.out.println("TITLE IS: "+title);
-        if(!title.equals("Virtually There Weather ")){
-            System.out.println("normal operation");
-            try {
-                Elements optionTags = doc.select("option");
 
-                for(Element e:optionTags){
-                    if(e.attr("value").contains("/auto/virtuallythere_jan3/radar/station.asp")){
-                        System.out.println(e.attr("value"));
-                        stationValue = e.attr("value");
-                    }
+        try {
+            Elements optionTags = doc.select("option");
+
+            for(Element e:optionTags){
+                if(e.attr("value").contains("/auto/virtuallythere_jan3/radar/station.asp")){
+                    System.out.println(e.attr("value"));
+                    stationValue = e.attr("value");
                 }
-                stationValue = stationValue.replaceAll("/auto/virtuallythere_jan3/radar/station.asp\\?ID=","");
-                System.out.println(stationValue);
-
-                String stationId = stationValue.substring(0,3);
-                System.out.println(stationId);
-
-                result = stationId;
-
-            } catch (Exception e) {
-                System.err.println("ERROR");
             }
-        }else{
-            System.out.println("Error");
-            result = "null";
-            System.exit(1);
+            stationValue = stationValue.replaceAll("/auto/virtuallythere_jan3/radar/station.asp\\?ID=","");
+            System.out.println(stationValue);
+
+            String stationId = stationValue.substring(0,3);
+            System.out.println(stationId);
+
+            result = stationId;
+
+        } catch (Exception e) {
+            System.err.println("ERROR");
         }
 
 
@@ -275,6 +282,8 @@ public class WeatherDriver {
         closeDB(conn);
         return result;
     }
+
+
 
 
 
