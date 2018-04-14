@@ -1,47 +1,17 @@
 package MarschelHmwk05FX;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.*;
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.image.ImageView;
-import javafx.stage.Stage;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.*;
-import org.jsoup.select.*;
-import java.awt.*;
-import java.sql.*;
-import java.util.*;
-import java.io.*;
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.parser.*;
-import sun.security.validator.ValidatorException;
-import javax.sound.midi.ControllerEventListener;
-import java.net.*;
-import java.net.MalformedURLException;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.Event;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Tooltip;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.stage.Window;
-import javafx.scene.image.*;
 import javafx.scene.image.Image;
-
-
+import javafx.scene.image.ImageView;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.*;
 
 
 public class Controller{
@@ -85,24 +55,41 @@ public class Controller{
     public Tab cityTab;
 
     @FXML
-    public ImageView image1;
+    public ImageView image1; // logo image
 
     @FXML
-    public ImageView image2;
+    public ImageView image2; // logo image
 
     @FXML
-    public Button testButton;
+    public ImageView radarTab1Image; // tab1 image
 
     @FXML
-    public ImageView radarTab1Image;
+    public ImageView radarTab2Image;
 
 
+
+
+
+    public boolean imageClickValid1 = false;
+    public boolean imageClickValid2 = false;
+
+    public boolean cityFieldValid = false;
+    public boolean stateFieldValid = false;
+    public boolean citySearchButtonValid = false;
+
+    public boolean zipTabOpen = false;
 
 
 
 
     public void zipSearchButtonRun() {
         String zip = zipField.getText();
+
+        //test
+        System.out.println("test reading url");
+        System.out.println(WeatherDriver.readFromURL("https://www.wunderground.com/cgi-bin/findweather/getForecast?query=55555&btnWx=Go&vthost=&vt_language=&adtags=&brand=virtuallythere_jan3&select2=Select+mode.html"));
+
+        //test
 
         String[] searchResults = WeatherDriver.getCityStateFromZip(zip);
         String cityFixed = searchResults[0].replaceAll(" ", "_");
@@ -120,6 +107,11 @@ public class Controller{
         String output = WeatherDriver.cityWeather.toStringFormat();
 
         zipOutput.setText(output);
+
+        System.out.println("yes");
+        generateRadarImage(zip,1);
+        System.out.println("no");
+        imageClickValid1 = true;
 
 
     }
@@ -142,14 +134,28 @@ public class Controller{
         String output = WeatherDriver.cityWeather.toStringFormat();
 
         cityOutput.setText(output);
+        String zip = WeatherDriver.getZipFromCityState(state,city);
+        System.out.println("HELLOASDFLKAJSLDFKAJSLDFKJA;SLKDFJ");
+
+        System.out.println(zip);
+        generateRadarImage(zip,2);
+        imageClickValid2 = true;
+
+
     }
 
 
     public void cityTabOpened(){
+        citySearchButton.setDisable(true);
+        cityField.setDisable(true);
         stateComboBox.getItems().addAll(statesArray);
         stateComboBox.setVisibleRowCount(13);
+        zipTabOpen = false;
+    }
 
-
+    public void zipTabOpened(){
+        zipSearchButton.setDisable(true);
+        zipTabOpen = true;
     }
 
     public void zipEnter(){
@@ -159,14 +165,15 @@ public class Controller{
     }
 
     public void cityEnter(){
-        if(cityField.getText().length()>0){
+        cityDataPressed();
+        if(cityField.getText().length()>0 && stateComboBox.getValue().length()==2){
             citySearchButtonRun();
         }
     }
 
-    public void imageClick(){
+    public void imageClick(){ // for logo
         try {
-            Desktop desktop = java.awt.Desktop.getDesktop();
+            Desktop desktop = Desktop.getDesktop();
             URI oURL = new URI("http://www.wunderground.com");
             desktop.browse(oURL);
         } catch (Exception e) {
@@ -174,30 +181,129 @@ public class Controller{
         }
     }
 
-    public void testButtonRun(){
-        String zip = zipField.getText();
-        String[] cityState = WeatherDriver.getCityStateFromZip(zip);
-        String cityFixed = cityState[0].replaceAll(" ", "%20");
+    public void radarImageClick(){
+        if(zipTabOpen == true){
+            if(imageClickValid1){
+                try {
+                    File radarImage = new File("radarImage1.jpg");
+                    Desktop desktop = Desktop.getDesktop();
+                    desktop.open(radarImage);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }else if(zipTabOpen == false){
+            if(imageClickValid2){
+                try {
+                    File radarImage = new File("radarImage2.jpg");
+                    Desktop desktop = Desktop.getDesktop();
+                    desktop.open(radarImage);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
-        String radarLink = String.format("https://www.wunderground.com/radar/radblast.asp?ID=eax&label=%s",cityFixed);
+    }
+
+    public String formatStationString(String zip){
+        String result = String.format("https://www.wunderground.com/cgi-bin/findweather/"+
+                "getForecast?query=%s&btnWx=Go&vthost=&vt_language=&adtags=&brand=virtuallythere_jan3&select2=Select+mode",zip);
+        return result;
+    }
+
+    public void generateRadarImage(String zip, int option){
+        int zipInt = Integer.parseInt(zip);
+
+        // get the link to the correct weather station
+        String radarStationPage = formatStationString(zip);
+
+        System.out.println(radarStationPage+"\n");
+
+        System.out.println("yessssssssssss4555");
+        String radarStationPageData = WeatherDriver.readFromURL(radarStationPage);
+        System.out.println("yesss");
+        String stationId = WeatherDriver.findWeatherStationId(radarStationPageData);
+        System.out.println(stationId);
+
+        if(stationId.equalsIgnoreCase("null")){
+            System.out.println("NULLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
+            zipInt ++;
+            zip = Integer.toString(zipInt);
+            radarStationPage = formatStationString(zip);
+            radarStationPageData = WeatherDriver.readFromURL(radarStationPage);
+            stationId = WeatherDriver.findWeatherStationId(radarStationPageData);
+        }
+
+        String radarLink = String.format("https://www.wunderground.com/radar/radblast.asp?ID=%s",stationId);
+
+        String radarLinkData = WeatherDriver.readFromURL(radarLink); // get the sourcecode of page with radar image
+
+        if(option == 1){
+            WeatherDriver.downloadRadarImage(radarLinkData,1);
+            Image radar1 = new Image("file:radarImage1.jpg");
+            radarTab1Image.setImage(radar1);
+        }else if(option == 2){
+            WeatherDriver.downloadRadarImage(radarLinkData,2);
+            Image radar2 = new Image("file:radarImage2.jpg");
+            radarTab2Image.setImage(radar2);
+        }
+
+    }
 
 
-        String radarLinkData = WeatherDriver.readFromURL(radarLink);
 
-        WeatherDriver.getLinkToRadarPage(radarLinkData);
+    public void zipFieldChanged(){
+        if(zipField.getText().length()==5){
+            zipSearchButton.setDisable(false);
+        }else{
+            zipSearchButton.setDisable(true);
+        }
+    }
 
-        Image radar1 = new Image("file:radarImage.jpg");
+    public void zipFieldPressed(){
+        zipFieldChanged();
+    }
 
-        radarTab1Image.setImage(radar1);
+    public void cityDataEdit(){
 
+        String stateComboBoxValue = stateComboBox.getEditor().getText();
 
+        if(stateComboBoxValue != null){
+            if(Arrays.asList(statesArray).contains(stateComboBoxValue.toUpperCase())){
+                cityFieldValid = true;
+            }else{
+                cityFieldValid = false;
+                citySearchButtonValid = false;
+            }
+        }
 
+        if(cityFieldValid){
+            cityField.setDisable(false);
+        }else{
+            cityField.setDisable(true);
+        }
 
+        if(stateComboBoxValue !=null && cityField.getText() != null){
+            if(cityFieldValid && cityField.getText().length()>1){
+                citySearchButtonValid = true;
+            }else{
+                citySearchButtonValid = false;
+            }
+        }else{
+            citySearchButtonValid = false;
+        }
 
+        if(citySearchButtonValid){
+            citySearchButton.setDisable(false);
+        }else{
+            citySearchButton.setDisable(true);
+        }
 
+    }
 
-
-
+    public void cityDataPressed(){
+        cityDataEdit();
     }
 
 

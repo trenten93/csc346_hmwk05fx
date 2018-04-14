@@ -139,30 +139,23 @@ public class WeatherDriver {
         return cityState;
     }
 
-    public static String readFromURL(String urlString){ // delete file creation when finished
+    public static String readFromURL(String urlString){ // returns string of source code of link
         String data = "";
         String line;
+        System.out.println(urlString);
         try {
-            File weatherData = new File("WeatherData.xml");
-            PrintWriter output = new PrintWriter(weatherData);
-
             URL  url = new URL(urlString);
             BufferedReader input = new BufferedReader(new InputStreamReader( url.openStream()));
-
             while((line = input.readLine()) != null){
                 data += line +"\n";
-
-                output.println(line);//remove after testing
             }
             input.close();
-            output.close();
         } catch (Exception e) {
+            System.out.println("death");
             System.err.println(e.getMessage());
-            System.exit(3);
+            System.exit(1);
             e.printStackTrace();
         }
-
-
         return data;
     }
 
@@ -182,49 +175,102 @@ public class WeatherDriver {
         }
     }
 
-    public static void getLinkToRadarPage(String inputLink){
+    public static void downloadRadarImage(String inputLink, int num){ // connects to radar page and creates image file in root
         String imageLink = "";
-        Document doc = Jsoup.parse(inputLink,"",Parser.htmlParser());
-        Elements imageLinks = doc.select("img");
-
-        for(Element e:imageLinks){
-            String linkText = e.toString();
-            if(linkText.contains("radblast")){
-                System.out.println(e.attr("src"));
-                imageLink = "https:"+e.attr("src")+".jpg";
-            }
-
-        }
 
         try {
+            Document doc = Jsoup.parse(inputLink,"",Parser.htmlParser());
+            Elements imageLinks = doc.select("img");
+            for(Element e:imageLinks){
+                String linkText = e.toString();
+                if(linkText.contains("radblast")){
+                    imageLink = "https:"+e.attr("src")+".jpg";
+                }
+            }
             URL  url = new URL(imageLink);
-
             InputStream input = new BufferedInputStream(url.openStream());
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-
             byte[] buf = new byte[1024];
             int n = 0;
-            while (-1!=(n=input.read(buf)))
-            {
+            while (-1!=(n=input.read(buf))) {
                 out.write(buf, 0, n);
             }
-
             out.close();
             input.close();
             byte[] response = out.toByteArray();
-
-            FileOutputStream fos = new FileOutputStream("radarImage.jpg");
-            fos.write(response);
-            fos.close();
-
-
+            if(num ==1){
+                FileOutputStream fos = new FileOutputStream("radarImage1.jpg");
+                fos.write(response);
+                fos.close();
+            }else if(num ==2){
+                FileOutputStream fos = new FileOutputStream("radarImage2.jpg");
+                fos.write(response);
+                fos.close();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
+    public static String findWeatherStationId(String data){
+        String result = "";
+        String stationValue = "";
+        Document doc = Jsoup.parse(data,"",Parser.htmlParser());
+        String title = doc.title();
+        System.out.println("TITLE IS: "+title);
+        if(!title.equals("Virtually There Weather ")){
+            System.out.println("normal operation");
+            try {
+                Elements optionTags = doc.select("option");
 
+                for(Element e:optionTags){
+                    if(e.attr("value").contains("/auto/virtuallythere_jan3/radar/station.asp")){
+                        System.out.println(e.attr("value"));
+                        stationValue = e.attr("value");
+                    }
+                }
+                stationValue = stationValue.replaceAll("/auto/virtuallythere_jan3/radar/station.asp\\?ID=","");
+                System.out.println(stationValue);
+
+                String stationId = stationValue.substring(0,3);
+                System.out.println(stationId);
+
+                result = stationId;
+
+            } catch (Exception e) {
+                System.err.println("ERROR");
+            }
+        }else{
+            System.out.println("Error");
+            result = "null";
+            System.exit(1);
+        }
+
+
+        return result;
+    }
+
+
+    public static String getZipFromCityState(String state,String city){
+        String result = "";
+        Connection conn = connectToDB("zipDatabase.db");
+        try {
+            Statement stmt = conn.createStatement();
+            String queryString = String.format("Select * from zips where state like '%s' and city like '%s' and decommissioned like 'false' " +
+                    "and locationtype like 'primary' order by estimatedpopulation",state,city);
+            ResultSet rs = stmt.executeQuery(queryString);
+            while (rs.next()) {
+                result = rs.getString("zipcode");
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        closeDB(conn);
+        return result;
+    }
 
 
 
