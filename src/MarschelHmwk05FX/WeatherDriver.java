@@ -143,9 +143,13 @@ public class WeatherDriver {
         String data = "";
         String line;
         System.out.println(urlString);
+
         try {
             URL  url = new URL(urlString);
+
+
             BufferedReader input = new BufferedReader(new InputStreamReader( url.openStream()));
+
             while((line = input.readLine()) != null){
                 data += line +"\n";
             }

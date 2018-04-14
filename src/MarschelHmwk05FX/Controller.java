@@ -87,7 +87,8 @@ public class Controller{
 
         //test
         System.out.println("test reading url");
-        System.out.println(WeatherDriver.readFromURL("https://www.wunderground.com/cgi-bin/findweather/getForecast?query=55555&btnWx=Go&vthost=&vt_language=&adtags=&brand=virtuallythere_jan3&select2=Select+mode.html"));
+        String test = WeatherDriver.readFromURL("https://www.wunderground.com/cgi-bin/findweather/getForecast" +
+                "?query=55555&btnWx=Go&vthost=&vt_language=&adtags=&brand=virtuallythere_jan3&select2=Select+mode");
 
         //test
 
