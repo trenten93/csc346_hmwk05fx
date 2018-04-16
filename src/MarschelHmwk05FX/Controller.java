@@ -67,40 +67,39 @@ public class Controller{
     public ImageView radarTab2Image;
 
 
-
-
-
     public boolean imageClickValid1 = false;
     public boolean imageClickValid2 = false;
 
     public boolean cityFieldValid = false;
-    public boolean stateFieldValid = false;
     public boolean citySearchButtonValid = false;
-
     public boolean zipTabOpen = false;
-
-
+    public String errorMessage="";
 
 
 
 
     public void zipSearchButtonRun() {
         String zip = zipField.getText();
+        double zipDouble = Double.parseDouble(zip)/100000;
         int zipInt = Integer.parseInt(zip);
-
+        if(zipInt>99950){
+            zip = "99950";
+        }
 
         String[] searchResults = WeatherDriver.getCityStateFromZip(zip);
 
         while(searchResults[0].equals("error") && searchResults[1].equals("error")){
-            zipInt ++;
-            System.out.println("fixing zip code");
-            zip = Integer.toString(zipInt);
+            zipDouble = zipDouble+0.00001;
+            zip = Double.toString(zipDouble);
+            if(zip.length()>7){
+                zip = zip.substring(2,7);
+            }else{
+                zip = zip.substring(2);
+            }
             searchResults = WeatherDriver.getCityStateFromZip(zip);
+            errorMessage = "YOUR INITIAL ZIP WAS INVALID. \nShowing results for zip "+zip+ " instead\n\n";
         }
-
-        String cityFixed = ""; // test 58999
-
-        cityFixed = searchResults[0].replaceAll(" ", "_");
+        String cityFixed = searchResults[0].replaceAll(" ", "_");
 
 
         String urlString = String.format("http://api.wunderground.com/api/%s/conditions/q/%s/%s.xml",key,searchResults[1],cityFixed);
@@ -115,8 +114,11 @@ public class Controller{
 
         String output = WeatherDriver.cityWeather.toStringFormat();
 
-        zipOutput.setText(output);
+        zipOutput.setText(errorMessage);
+        zipOutput.appendText(output);
 
+
+        errorMessage = "";
         generateRadarImage(zip,1);
         imageClickValid1 = true;
 
@@ -129,6 +131,9 @@ public class Controller{
 
         String[] searchResults = WeatherDriver.getCityStateFromCityName(city,state);
         String cityFixed = searchResults[0].replaceAll(" ", "_");
+
+        // add while block here to catch errors and either automagically try to fix them or let the user know that
+        // they entered invalid information. or maybe try a combo of both.
 
         String urlString = String.format("http://api.wunderground.com/api/%s/conditions/q/%s/%s.xml",key,searchResults[1],cityFixed);
         System.out.println(urlString);
