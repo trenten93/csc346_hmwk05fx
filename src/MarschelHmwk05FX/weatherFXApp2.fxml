@@ -41,7 +41,7 @@
                               <Image url="@wundergroundLogo_4c.png" />
                            </image>
                         </ImageView>
-                        <ComboBox id="comboBox" fx:id="stateComboBox" editable="true" layoutX="75.0" layoutY="36.0" onInputMethodTextChanged="#cityDataPressed" onKeyReleased="#cityDataPressed" prefHeight="25.0" prefWidth="165.0" promptText="MO" />
+                        <ComboBox id="comboBox" fx:id="stateComboBox" editable="true" layoutX="75.0" layoutY="36.0" onHiding="#stateComboBoxHiding" onKeyReleased="#cityDataComboBoxKeyPressed" prefHeight="25.0" prefWidth="165.0" promptText="Missouri" />
                         <ImageView fx:id="radarTab2Image" fitHeight="187.0" fitWidth="244.0" layoutX="352.0" layoutY="109.0" onMouseClicked="#radarImageClick" pickOnBounds="true" preserveRatio="true" />
                      </children>
                   </AnchorPane>

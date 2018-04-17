@@ -1,5 +1,6 @@
 package MarschelHmwk05FX;
 
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.*;
@@ -7,6 +8,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
+
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +29,7 @@ public class Controller{
             "SC", "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"};
 
 
+    public ArrayList<String> states = new ArrayList<String>();
 
     @FXML
     public Button zipSearchButton;
@@ -46,9 +50,6 @@ public class Controller{
     public Button citySearchButton;
 
     @FXML
-    public ComboBox<String> stateComboBox;
-
-    @FXML
     public TabPane mainWindow;
 
     @FXML
@@ -65,6 +66,12 @@ public class Controller{
 
     @FXML
     public ImageView radarTab2Image;
+
+    @FXML
+    public ComboBox<String> stateComboBox;
+
+    public ComboBoxAutoComplete<String> autoCombo;
+
 
 
     public boolean imageClickValid1 = false;
@@ -126,8 +133,10 @@ public class Controller{
     }
 
     public void citySearchButtonRun(){
-        String state = stateComboBox.getValue().toString();
+        String stateFull = stateComboBox.getValue().toString();
         String city = cityField.getText();
+
+        String state = WeatherDriver.fullStateToAbb(stateFull);
 
         String[] searchResults = WeatherDriver.getCityStateFromCityName(city,state);
         String cityFixed = searchResults[0].replaceAll(" ", "_");
@@ -160,8 +169,14 @@ public class Controller{
     public void cityTabOpened(){
         citySearchButton.setDisable(true);
         cityField.setDisable(true);
-        stateComboBox.getItems().addAll(statesArray);
+        WeatherDriver.populateStatesArray(states);
+
+        stateComboBox.setTooltip(new Tooltip());
+        stateComboBox.getItems().addAll(states);
         stateComboBox.setVisibleRowCount(13);
+
+        autoCombo = new ComboBoxAutoComplete<String>(stateComboBox);
+
         zipTabOpen = false;
     }
 
@@ -177,8 +192,8 @@ public class Controller{
     }
 
     public void cityEnter(){
-        cityDataPressed();
-        if(cityField.getText().length()>0 && stateComboBox.getValue().length()==2){
+        //cityDataPressed();
+        if(cityField.getText().length()>0){//&& stateComboBox.getValue().length()==2
             citySearchButtonRun();
         }
     }
@@ -277,19 +292,24 @@ public class Controller{
         zipFieldChanged();
     }
 
+
     public void cityDataEdit(){
-
         String stateComboBoxValue = stateComboBox.getEditor().getText();
-
         if(stateComboBoxValue != null){
-            if(Arrays.asList(statesArray).contains(stateComboBoxValue.toUpperCase())){
+            boolean flag = false;
+            String compareState = stateComboBoxValue.toLowerCase();
+            for(String s:states){
+                if(s.toLowerCase().equals(compareState)){
+                    flag = true;
+                }
+            }
+            if(flag){
                 cityFieldValid = true;
             }else{
                 cityFieldValid = false;
                 citySearchButtonValid = false;
             }
         }
-
         if(cityFieldValid){
             cityField.setDisable(false);
         }else{
@@ -314,9 +334,24 @@ public class Controller{
 
     }
 
-    public void cityDataPressed(){
+    @FXML //combo box in scene builder was set to have cityDataPressed on the Input Method Text Changed.
+    public void cityDataPressed(KeyEvent e){
+        System.out.println("Controller key Event code is: "+e.getCode());
         cityDataEdit();
     }
+
+    @FXML
+    public void cityDataComboBoxKeyPressed(KeyEvent e){
+        System.out.println("Key event in comboBox in Controller is: "+e.getCode());
+        autoCombo.keyReleased(e);
+        cityDataEdit();
+    }
+
+    @FXML
+    public void stateComboBoxHiding(Event e){
+        autoCombo.onHiding(e);
+    }
+
 
 
 

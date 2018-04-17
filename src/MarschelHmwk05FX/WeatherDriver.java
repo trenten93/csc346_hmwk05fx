@@ -283,6 +283,53 @@ public class WeatherDriver {
         return result;
     }
 
+    public static void populateStatesArray(ArrayList states){
+        Connection conn = connectToDB("zipDatabase.db");
+
+        try {
+            Statement stmt = conn.createStatement();
+
+            String queryString = String.format("Select * from states order by stateFull");
+            ResultSet rs = stmt.executeQuery(queryString);
+
+            while(rs.next()){
+                states.add(rs.getString("stateFull"));
+            }
+            rs.close();
+            stmt.close();
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        closeDB(conn);
+    }
+
+
+    public static String fullStateToAbb(String fullState){
+        String result = "";
+
+        Connection conn = connectToDB("zipDatabase.db");
+
+        try {
+            Statement stmt = conn.createStatement();
+            String queryString = String.format("Select * from states where stateFull like '%s' ",fullState);
+            ResultSet rs = stmt.executeQuery(queryString);
+
+            while(rs.next()){
+                result = rs.getString("stateAbb");
+            }
+            rs.close();
+            stmt.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        closeDB(conn);
+
+        return result;
+
+    }
 
 
 
