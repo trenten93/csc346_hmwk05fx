@@ -20,16 +20,7 @@ import java.util.*;
 public class Controller{
     public static String key = WeatherDriver.getKey();
 
-    public String tempState= "";
-
-    public String[] statesArray = {"AK", "AL", "AR", "AZ", "CA", "CO", "CT",
-            "DC", "DE", "FL", "GA", "HI", "IA", "ID", "IL", "IN", "KS", "KY",
-            "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MS", "MT", "NC", "ND",
-            "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "RI",
-            "SC", "SD", "TN", "TX", "UT", "VA", "VT", "WA", "WI", "WV", "WY"};
-
-
-    public ArrayList<String> states = new ArrayList<String>();
+    public ArrayList<String> states = WeatherDriver.createStatesArray();
 
     @FXML
     public Button zipSearchButton;
@@ -86,12 +77,25 @@ public class Controller{
 
 
     public void zipSearchButtonRun() {
+        if(!isZipFieldValid()){
+            validateZipField();
+            if(!isZipFieldValid()){
+                return;
+            }
+        }
+
         String zip = zipField.getText();
+
         double zipDouble = Double.parseDouble(zip)/100000;
         int zipInt = Integer.parseInt(zip);
+
         if(zipInt>99950){
             zip = "99950";
         }
+        if(zipDouble < 0.00501){
+            zip = "00501";
+        }
+
 
         String[] searchResults = WeatherDriver.getCityStateFromZip(zip);
 
@@ -144,6 +148,12 @@ public class Controller{
         // add while block here to catch errors and either automagically try to fix them or let the user know that
         // they entered invalid information. or maybe try a combo of both.
 
+        if(searchResults[0].equals("error") || searchResults[1].equals("error")){
+            cityOutput.setText("That was not a valid city & state!");
+            return;
+        }
+
+
         String urlString = String.format("http://api.wunderground.com/api/%s/conditions/q/%s/%s.xml",key,searchResults[1],cityFixed);
         System.out.println(urlString);
 
@@ -156,7 +166,6 @@ public class Controller{
 
         cityOutput.setText(output);
         String zip = WeatherDriver.getZipFromCityState(state,city);
-        System.out.println("HELLOASDFLKAJSLDFKAJSLDFKJA;SLKDFJ");
 
         System.out.println(zip);
         generateRadarImage(zip,2);
@@ -167,33 +176,46 @@ public class Controller{
 
 
     public void cityTabOpened(){
+        Image logo2 = new Image("file:src/MarschelHmwk05FX/wuLogo2.png");
+        image2.setImage(logo2);
+
         citySearchButton.setDisable(true);
         cityField.setDisable(true);
-        WeatherDriver.populateStatesArray(states);
 
         stateComboBox.setTooltip(new Tooltip());
+
+        stateComboBox.getItems().clear();
         stateComboBox.getItems().addAll(states);
+
         stateComboBox.setVisibleRowCount(13);
 
         autoCombo = new ComboBoxAutoComplete<String>(stateComboBox);
-
         zipTabOpen = false;
+
+
     }
+
 
     public void zipTabOpened(){
+        Image logo1 = new Image("file:src/MarschelHmwk05FX/wuLogo1.png");
+        image1.setImage(logo1);
+
+
         zipSearchButton.setDisable(true);
         zipTabOpen = true;
+
     }
 
+
     public void zipEnter(){
-        if(zipField.getText().length() == 5){
+        if(zipField.getText().length() == 5 && isZipFieldValid()){
             zipSearchButtonRun();
         }
     }
 
+
     public void cityEnter(){
-        //cityDataPressed();
-        if(cityField.getText().length()>0){//&& stateComboBox.getValue().length()==2
+        if(cityField.getText().length()>0){
             citySearchButtonRun();
         }
     }
@@ -240,7 +262,17 @@ public class Controller{
     }
 
     public void generateRadarImage(String zip, int option){
-        int zipInt = Integer.parseInt(zip);
+        System.out.println("ZIP IS: "+zip);
+
+        int zipInt = 0;
+        try {
+            zipInt = Integer.parseInt(zip);
+        } catch (NumberFormatException e) {
+            System.err.println("error in zip format");
+            //e.printStackTrace();
+        }
+
+        double zipDouble = Double.parseDouble(zip)/100000;
 
         // get the link to the correct weather station
         String radarStationPage = formatStationString(zip);
@@ -251,17 +283,20 @@ public class Controller{
 
         while(radarStationPageData.equalsIgnoreCase("error")){
             zipInt ++;
+            zipDouble = zipDouble +0.00001;
             System.out.println(zipInt);
-            zip = Integer.toString(zipInt);
+            //zip = Integer.toString(zipInt);
+
+            zip = Double.toString(zipDouble);
+
+            zip = zip.substring(2,7);
+
             radarStationPage = formatStationString(zip);
             radarStationPageData = WeatherDriver.readFromURL(radarStationPage);
         }
 
         String stationId = WeatherDriver.findWeatherStationId(radarStationPageData);
         System.out.println(stationId);
-
-
-
         String radarLink = String.format("https://www.wunderground.com/radar/radblast.asp?ID=%s",stationId);
 
         String radarLinkData = WeatherDriver.readFromURL(radarLink); // get the sourcecode of page with radar image
@@ -279,17 +314,55 @@ public class Controller{
     }
 
 
+    public void validateZipField(){
+        if(!zipField.getText().matches("[0-9]*")){
+            String s = zipField.getText();
+            String temp = s.replaceAll("[^\\d]", "");
+            zipField.setText(temp);
+            zipField.positionCaret(zipField.getText().length());
+        }
 
-    public void zipFieldChanged(){
-        if(zipField.getText().length()==5){
+        if(zipField.getText().length() >5){
+            String s = zipField.getText().substring(0,5);
+            zipField.setText(s);
+            zipField.positionCaret(5);
+        }
+
+    }
+
+    public boolean isZipFieldValid(){
+        if(zipField.getText().matches("[0-9]*") && zipField.getText().length() == 5){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public void zipFieldChanged(){//key released
+        if(!isZipFieldValid()){
+            zipSearchButton.setDisable(true);
+            validateZipField();
+        }else{
+            zipSearchButton.setDisable(false);
+        }
+
+        if(zipField.getText().length() == 5){
             zipSearchButton.setDisable(false);
         }else{
             zipSearchButton.setDisable(true);
         }
+
+
     }
 
     public void zipFieldPressed(){
-        zipFieldChanged();
+        if(!isZipFieldValid()){
+            zipSearchButton.setDisable(true);
+            validateZipField();
+        }else{
+            zipSearchButton.setDisable(false);
+        }
+
     }
 
 
@@ -334,15 +407,13 @@ public class Controller{
 
     }
 
-    @FXML //combo box in scene builder was set to have cityDataPressed on the Input Method Text Changed.
+    @FXML
     public void cityDataPressed(KeyEvent e){
-        System.out.println("Controller key Event code is: "+e.getCode());
         cityDataEdit();
     }
 
     @FXML
     public void cityDataComboBoxKeyPressed(KeyEvent e){
-        System.out.println("Key event in comboBox in Controller is: "+e.getCode());
         autoCombo.keyReleased(e);
         cityDataEdit();
     }

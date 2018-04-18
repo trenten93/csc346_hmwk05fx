@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
+import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
@@ -17,6 +18,7 @@ public class ComboBoxAutoComplete<T> {
     public String filter = "";
     private ObservableList<T> originalItems;
 
+
     public ComboBoxAutoComplete(ComboBox<T> cmb) {
         this.cmb = cmb;
         originalItems = FXCollections.observableArrayList(cmb.getItems());
@@ -24,20 +26,17 @@ public class ComboBoxAutoComplete<T> {
     }
 
     public void keyReleased(KeyEvent e){
-        System.out.println("ComboBoxAuto Class Key event code is: "+e.getCode());
         handleOnKeyPressed(e);
     }
 
     public void onHiding(Event e){
-        System.out.println("Event in hiding in AutoCombo is: "+e.getEventType().toString());
         handleOnHiding(e);
     }
 
     public void handleOnKeyPressed(KeyEvent e) {
         ObservableList<T> filteredList = FXCollections.observableArrayList();
         KeyCode code = e.getCode();
-        System.out.println("Keycode is: "+code);
-        System.out.println("Filter is: "+filter);
+        cmb.getEditor().end();
 
         if(cmb.getEditor().getText().length() ==0){
             filter = "";
@@ -49,8 +48,9 @@ public class ComboBoxAutoComplete<T> {
             filter = cmb.getEditor().getText();
         }
         if(code == KeyCode.BACK_SPACE && filter.length() > 0) {
-            filter = cmb.getEditor().getText();
             cmb.getItems().setAll(originalItems);
+            filter = cmb.getEditor().getText();
+            cmb.getEditor().end();
         }
         if(code == KeyCode.ESCAPE) {
             filter = "";
@@ -59,12 +59,11 @@ public class ComboBoxAutoComplete<T> {
             return;
         }
         if(code == KeyCode.ENTER){
-            filter = cmb.getValue().toString();
+            filter = cmb.getEditor().getText();
             return;
         }
-        if(code == KeyCode.TAB){
-            //filter = cmb.getEditor().getText();
-            filter = cmb.getValue().toString();
+        if(code == KeyCode.TAB ){
+            filter = cmb.getEditor().getText();
             return;
         }
 
@@ -74,7 +73,16 @@ public class ComboBoxAutoComplete<T> {
         }else {
             Stream<T> items = cmb.getItems().stream();
             String txtUsr = unaccent(filter.toString().toLowerCase());
+
+
             items.filter(el -> unaccent(el.toString().toLowerCase()).contains(txtUsr)).forEach(filteredList::add);
+
+
+//            items.filter(el -> {
+//                return unaccent(el.toString().toLowerCase()).contains(txtUsr);
+//            }).forEach(filteredList::add);
+
+
             cmb.getTooltip().setText(txtUsr);
             Window stage = cmb.getScene().getWindow();
             double posX = stage.getX() + cmb.getBoundsInParent().getMinX();
@@ -83,7 +91,6 @@ public class ComboBoxAutoComplete<T> {
             cmb.show();
         }
         cmb.getItems().setAll(filteredList);
-        return;
     }
 
     public void handleOnHiding(Event e) {

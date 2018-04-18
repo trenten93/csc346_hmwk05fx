@@ -139,9 +139,16 @@ public class WeatherDriver {
             rs.close();
             stmt.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Error in city name");
+            cityState[0] = "error";
+            cityState[1] = "error";
         }
         closeDB(conn);
+        if(cityState[0] == null || cityState[1] == null){
+            cityState[0] = "error";
+            cityState[1] = "error";
+        }
+
         return cityState;
     }
 
@@ -205,6 +212,24 @@ public class WeatherDriver {
                     imageLink = "https:"+e.attr("src")+".jpg";
                 }
             }
+
+            byte[] response = getImageSource(imageLink);
+
+            if(num ==1){
+                createImageFromSource(response,"radarImage1.jpg");
+            }else if(num ==2){
+                createImageFromSource(response,"radarImage2.jpg");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public static byte[] getImageSource(String imageLink){
+        byte[] response = null;
+        try {
             URL  url = new URL(imageLink);
             InputStream input = new BufferedInputStream(url.openStream());
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -215,20 +240,22 @@ public class WeatherDriver {
             }
             out.close();
             input.close();
-            byte[] response = out.toByteArray();
-            if(num ==1){
-                FileOutputStream fos = new FileOutputStream("radarImage1.jpg");
-                fos.write(response);
-                fos.close();
-            }else if(num ==2){
-                FileOutputStream fos = new FileOutputStream("radarImage2.jpg");
-                fos.write(response);
-                fos.close();
-            }
+            response = out.toByteArray();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return response;
+    }
 
+    public static void createImageFromSource(byte[] source,String fileName){
+        try {
+            FileOutputStream fos = new FileOutputStream(fileName);
+            fos.write(source);
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static String findWeatherStationId(String data){
@@ -268,8 +295,9 @@ public class WeatherDriver {
         Connection conn = connectToDB("zipDatabase.db");
         try {
             Statement stmt = conn.createStatement();
+
             String queryString = String.format("Select * from zips where state like '%s' and city like '%s' and decommissioned like 'false' " +
-                    "and locationtype like 'primary' order by estimatedpopulation",state,city);
+                    "order by estimatedpopulation",state,city);//and locationtype like 'primary'
             ResultSet rs = stmt.executeQuery(queryString);
             while (rs.next()) {
                 result = rs.getString("zipcode");
@@ -277,23 +305,23 @@ public class WeatherDriver {
             rs.close();
             stmt.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            result = "error";
+            //e.printStackTrace();
         }
         closeDB(conn);
         return result;
     }
 
-    public static void populateStatesArray(ArrayList states){
+    public static ArrayList<String> createStatesArray(){
+        ArrayList<String> result = new ArrayList<String>();
         Connection conn = connectToDB("zipDatabase.db");
 
         try {
             Statement stmt = conn.createStatement();
-
             String queryString = String.format("Select * from states order by stateFull");
             ResultSet rs = stmt.executeQuery(queryString);
-
             while(rs.next()){
-                states.add(rs.getString("stateFull"));
+                result.add(rs.getString("stateFull"));
             }
             rs.close();
             stmt.close();
@@ -303,6 +331,9 @@ public class WeatherDriver {
             e.printStackTrace();
         }
         closeDB(conn);
+
+        return result;
+
     }
 
 
