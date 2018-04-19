@@ -136,22 +136,52 @@ public class Controller{
 
     }
 
+    public static String attemptFixOnCitySearch(String city){
+        String result = "";
+        ArrayList<String> stringList = new ArrayList<String>();
+
+        if(city.length() == 0){
+            result = "%";
+        }else{
+            String[] temp = city.split("");
+            stringList.addAll(Arrays.asList(temp));
+
+            for(int i=0;i<stringList.size();i++){
+                if(i==0){
+                    stringList.add(0,"%");
+                }else if(i%2 == 0){
+                    stringList.add(i,"%");
+                }
+            }
+            for(String s:stringList){
+                result += s;
+            }
+        }
+        return result;
+    }
+
     public void citySearchButtonRun(){
         String stateFull = stateComboBox.getValue().toString();
         String city = cityField.getText();
+        cityOutput.setText("");
 
         String state = WeatherDriver.fullStateToAbb(stateFull);
-
         String[] searchResults = WeatherDriver.getCityStateFromCityName(city,state);
-        String cityFixed = searchResults[0].replaceAll(" ", "_");
-
-        // add while block here to catch errors and either automagically try to fix them or let the user know that
-        // they entered invalid information. or maybe try a combo of both.
 
         if(searchResults[0].equals("error") || searchResults[1].equals("error")){
-            cityOutput.setText("That was not a valid city & state!");
-            return;
+            String fixedCity = attemptFixOnCitySearch(city);
+            searchResults = WeatherDriver.getCityStateFromCityName(fixedCity,state);
+
+            if(!searchResults[0].equals("error") || !searchResults[1].equals("error")){
+                String tempOutput = String.format("Showing results for city that contained the letters '%s'\n",city);
+                cityOutput.setText(tempOutput);
+            }else{
+                cityOutput.setText("That was not a valid city & state search!");
+                return;
+            }
+
         }
+        String cityFixed = searchResults[0].replaceAll(" ", "_");
 
 
         String urlString = String.format("http://api.wunderground.com/api/%s/conditions/q/%s/%s.xml",key,searchResults[1],cityFixed);
@@ -164,10 +194,9 @@ public class Controller{
 
         String output = WeatherDriver.cityWeather.toStringFormat();
 
-        cityOutput.setText(output);
-        String zip = WeatherDriver.getZipFromCityState(state,city);
+        cityOutput.appendText(output);
+        String zip = WeatherDriver.getZipFromCityState(state,searchResults[0]);
 
-        System.out.println(zip);
         generateRadarImage(zip,2);
         imageClickValid2 = true;
 
@@ -262,43 +291,31 @@ public class Controller{
     }
 
     public void generateRadarImage(String zip, int option){
-        System.out.println("ZIP IS: "+zip);
-
-        int zipInt = 0;
-        try {
-            zipInt = Integer.parseInt(zip);
-        } catch (NumberFormatException e) {
-            System.err.println("error in zip format");
-            //e.printStackTrace();
+        if(zip.equals("")){
+            return;
         }
-
-        double zipDouble = Double.parseDouble(zip)/100000;
+        double zipDouble = 0;
+        try {
+            zipDouble = Double.parseDouble(zip)/100000;
+        } catch (NumberFormatException e) {
+            System.err.println("Error in generate radar image!");
+            return;
+        }
 
         // get the link to the correct weather station
         String radarStationPage = formatStationString(zip);
-
-        System.out.println(radarStationPage+"\n");
-
         String radarStationPageData = WeatherDriver.readFromURL(radarStationPage);
 
         while(radarStationPageData.equalsIgnoreCase("error")){
-            zipInt ++;
             zipDouble = zipDouble +0.00001;
-            System.out.println(zipInt);
-            //zip = Integer.toString(zipInt);
-
             zip = Double.toString(zipDouble);
-
             zip = zip.substring(2,7);
-
             radarStationPage = formatStationString(zip);
             radarStationPageData = WeatherDriver.readFromURL(radarStationPage);
         }
 
         String stationId = WeatherDriver.findWeatherStationId(radarStationPageData);
-        System.out.println(stationId);
         String radarLink = String.format("https://www.wunderground.com/radar/radblast.asp?ID=%s",stationId);
-
         String radarLinkData = WeatherDriver.readFromURL(radarLink); // get the sourcecode of page with radar image
 
         if(option == 1){

@@ -1,35 +1,21 @@
 package MarschelHmwk05FX;
 
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.*;
 import org.jsoup.select.*;
 import java.sql.*;
 import java.util.*;
 import java.io.*;
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.parser.*;
-import sun.security.validator.ValidatorException;
-
-import javax.sound.midi.ControllerEventListener;
 import java.net.*;
-import java.net.MalformedURLException;
 
 
 public class WeatherDriver {
     public static Weather cityWeather = new Weather();
-    //public static Connection conn = connectToDB("zipDatabase.db");
     public static String key = getKey();
-
-
     public WeatherDriver(){
-
+        //
     }
 
 
@@ -45,7 +31,7 @@ public class WeatherDriver {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("It did not open");
+            System.err.println("DATABASE DID NOT OPEN!!!");
             return null;
         }
     }
@@ -59,7 +45,6 @@ public class WeatherDriver {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
         return key;
     }
 
@@ -86,7 +71,6 @@ public class WeatherDriver {
                 String locationType = rs.getString("locationtype");
                 String worldRegion = rs.getString("worldregion");
                 String country = rs.getString("country");
-
                 System.out.printf("City: %-20s state: %-5s zipcode: %-7s country: %-4s locationType: %-15s\n",city,state,zipcode,country,locationType);
             }
             rs.close();
@@ -104,16 +88,13 @@ public class WeatherDriver {
             Statement stmt = conn.createStatement();
             String queryString = String.format("Select * from zips where zipcode like '%s' and locationtype like 'PRIMARY' ",zip);
             ResultSet rs = stmt.executeQuery(queryString);
-
             while (rs.next()) {
-                String zipcode = rs.getString("zipcode");
                 zipInfo[0] = rs.getString("city");
                 zipInfo[1] = rs.getString("state");
             }
             rs.close();
             stmt.close();
         } catch (Exception e) {
-            System.out.println("error in getCityStateFromZip");
             zipInfo[0]="error";
             zipInfo[1] = "error";
         }
@@ -130,7 +111,8 @@ public class WeatherDriver {
         Connection conn = connectToDB("zipDatabase.db");
         try {
             Statement stmt = conn.createStatement();
-            String queryString = String.format("Select city,state from zips where state like '%s' and city like '%s%%' ",state,cityName);
+            String queryString = String.format("Select * from zips where state like '%s' and city like '%s%%' " +
+                    "and decommissioned like 'false' order by estimatedpopulation ",state,cityName);
             ResultSet rs = stmt.executeQuery(queryString);
             while (rs.next()) {
                 cityState[0] = rs.getString("city");
@@ -139,7 +121,6 @@ public class WeatherDriver {
             rs.close();
             stmt.close();
         } catch (SQLException e) {
-            System.out.println("Error in city name");
             cityState[0] = "error";
             cityState[1] = "error";
         }
@@ -155,7 +136,6 @@ public class WeatherDriver {
     public static String readFromURL(String urlString){ // returns string of source code of link
         String data = "";
         String line;
-        System.out.println(urlString);
         try {
             URL  url = new URL(urlString);
             BufferedReader input = null;
@@ -163,7 +143,6 @@ public class WeatherDriver {
                 input = new BufferedReader(new InputStreamReader( url.openStream()));
             } catch (FileNotFoundException e) {
                 data = "error";
-                System.out.println(data);
                 return data;
             }
             while((line = input.readLine()) != null){
@@ -171,17 +150,10 @@ public class WeatherDriver {
             }
             input.close();
         } catch (Exception e) {
-            System.out.println(data);
             data = "error";
             return data;
         }
         return data;
-    }
-
-    public static String readFromUrlTest(String urlString){
-        String result = "";
-
-        return result;
     }
 
     public static void parseXmlString(String data){
@@ -202,7 +174,6 @@ public class WeatherDriver {
 
     public static void downloadRadarImage(String inputLink, int num){ // connects to radar page and creates image file in root
         String imageLink = "";
-
         try {
             Document doc = Jsoup.parse(inputLink,"",Parser.htmlParser());
             Elements imageLinks = doc.select("img");
@@ -214,7 +185,6 @@ public class WeatherDriver {
             }
 
             byte[] response = getImageSource(imageLink);
-
             if(num ==1){
                 createImageFromSource(response,"radarImage1.jpg");
             }else if(num ==2){
@@ -269,23 +239,15 @@ public class WeatherDriver {
 
             for(Element e:optionTags){
                 if(e.attr("value").contains("/auto/virtuallythere_jan3/radar/station.asp")){
-                    System.out.println(e.attr("value"));
                     stationValue = e.attr("value");
                 }
             }
             stationValue = stationValue.replaceAll("/auto/virtuallythere_jan3/radar/station.asp\\?ID=","");
-            System.out.println(stationValue);
-
             String stationId = stationValue.substring(0,3);
-            System.out.println(stationId);
-
             result = stationId;
-
         } catch (Exception e) {
             System.err.println("ERROR");
         }
-
-
         return result;
     }
 
@@ -306,7 +268,6 @@ public class WeatherDriver {
             stmt.close();
         } catch (SQLException e) {
             result = "error";
-            //e.printStackTrace();
         }
         closeDB(conn);
         return result;
@@ -325,28 +286,22 @@ public class WeatherDriver {
             }
             rs.close();
             stmt.close();
-
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
         closeDB(conn);
-
         return result;
-
     }
 
 
     public static String fullStateToAbb(String fullState){
         String result = "";
-
         Connection conn = connectToDB("zipDatabase.db");
 
         try {
             Statement stmt = conn.createStatement();
             String queryString = String.format("Select * from states where stateFull like '%s' ",fullState);
             ResultSet rs = stmt.executeQuery(queryString);
-
             while(rs.next()){
                 result = rs.getString("stateAbb");
             }
@@ -357,12 +312,8 @@ public class WeatherDriver {
             e.printStackTrace();
         }
         closeDB(conn);
-
         return result;
-
     }
-
-
 
 
 }

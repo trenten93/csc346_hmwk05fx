@@ -77,11 +77,9 @@ public class ComboBoxAutoComplete<T> {
 
             items.filter(el -> unaccent(el.toString().toLowerCase()).contains(txtUsr)).forEach(filteredList::add);
 
-
 //            items.filter(el -> {
 //                return unaccent(el.toString().toLowerCase()).contains(txtUsr);
 //            }).forEach(filteredList::add);
-
 
             cmb.getTooltip().setText(txtUsr);
             Window stage = cmb.getScene().getWindow();
