@@ -85,7 +85,6 @@ public class Controller{
         }
 
         String zip = zipField.getText();
-
         double zipDouble = Double.parseDouble(zip)/100000;
         int zipInt = Integer.parseInt(zip);
 
@@ -95,7 +94,6 @@ public class Controller{
         if(zipDouble < 0.00501){
             zip = "00501";
         }
-
 
         String[] searchResults = WeatherDriver.getCityStateFromZip(zip);
 
@@ -114,11 +112,10 @@ public class Controller{
 
 
         String urlString = String.format("http://api.wunderground.com/api/%s/conditions/q/%s/%s.xml",key,searchResults[1],cityFixed);
-        System.out.println(urlString);
 
         String urlStringT = "http://www.pcrepairforums.com/misc/school/Maitland.xml";// just generating data from static xml file.
 
-        String data = WeatherDriver.readFromURL(urlStringT);
+        String data = WeatherDriver.readFromURL(urlString);
 
         // parse data for weather data.
         WeatherDriver.parseXmlString(data);
@@ -132,6 +129,47 @@ public class Controller{
         errorMessage = "";
         generateRadarImage(zip,1);
         imageClickValid1 = true;
+
+
+    }
+
+
+    public void citySearchButtonRun(){
+        String stateFull = stateComboBox.getValue().toString();
+        String city = cityField.getText();
+        cityOutput.setText("");
+
+        String state = WeatherDriver.fullStateToAbb(stateFull);
+        String[] searchResults = WeatherDriver.getCityStateFromCityName(city,state);
+
+        if(searchResults[0].equals("error") || searchResults[1].equals("error")){
+            String fixedCity = attemptFixOnCitySearch(city);
+            searchResults = WeatherDriver.getCityStateFromCityName(fixedCity,state);
+
+            if(!searchResults[0].equals("error") || !searchResults[1].equals("error")){
+                String tempOutput = String.format("Showing results for city that contained the letters '%s'\n",city);
+                cityOutput.setText(tempOutput);
+            }else{
+                cityOutput.setText("That was not a valid city & state search!");
+                return;
+            }
+
+        }
+        String cityFixed = searchResults[0].replaceAll(" ", "_");
+        String urlString = String.format("http://api.wunderground.com/api/%s/conditions/q/%s/%s.xml",key,searchResults[1],cityFixed);
+
+        String urlStringT = "http://www.pcrepairforums.com/misc/school/Maitland.xml";
+
+        String data = WeatherDriver.readFromURL(urlString);
+        WeatherDriver.parseXmlString(data);
+
+        String output = WeatherDriver.cityWeather.toStringFormat();
+
+        cityOutput.appendText(output);
+        String zip = WeatherDriver.getZipFromCityState(state,searchResults[0]);
+
+        generateRadarImage(zip,2);
+        imageClickValid2 = true;
 
 
     }
@@ -158,49 +196,6 @@ public class Controller{
             }
         }
         return result;
-    }
-
-    public void citySearchButtonRun(){
-        String stateFull = stateComboBox.getValue().toString();
-        String city = cityField.getText();
-        cityOutput.setText("");
-
-        String state = WeatherDriver.fullStateToAbb(stateFull);
-        String[] searchResults = WeatherDriver.getCityStateFromCityName(city,state);
-
-        if(searchResults[0].equals("error") || searchResults[1].equals("error")){
-            String fixedCity = attemptFixOnCitySearch(city);
-            searchResults = WeatherDriver.getCityStateFromCityName(fixedCity,state);
-
-            if(!searchResults[0].equals("error") || !searchResults[1].equals("error")){
-                String tempOutput = String.format("Showing results for city that contained the letters '%s'\n",city);
-                cityOutput.setText(tempOutput);
-            }else{
-                cityOutput.setText("That was not a valid city & state search!");
-                return;
-            }
-
-        }
-        String cityFixed = searchResults[0].replaceAll(" ", "_");
-
-
-        String urlString = String.format("http://api.wunderground.com/api/%s/conditions/q/%s/%s.xml",key,searchResults[1],cityFixed);
-        System.out.println(urlString);
-
-        String urlStringT = "http://www.pcrepairforums.com/misc/school/Maitland.xml";
-
-        String data = WeatherDriver.readFromURL(urlStringT);
-        WeatherDriver.parseXmlString(data);
-
-        String output = WeatherDriver.cityWeather.toStringFormat();
-
-        cityOutput.appendText(output);
-        String zip = WeatherDriver.getZipFromCityState(state,searchResults[0]);
-
-        generateRadarImage(zip,2);
-        imageClickValid2 = true;
-
-
     }
 
 
