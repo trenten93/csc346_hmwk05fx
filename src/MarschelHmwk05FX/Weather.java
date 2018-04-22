@@ -8,26 +8,14 @@ public class Weather {
     public String observationTime;
     public String weather;
     public String tempString;
-    public String tempF;
-    public String tempC;
     public String relativeHumidity;
     public String windString;
-    public String windDirection;
-    public String windDegrees;
-    public String windMph;
-    public String windGustMph;
-    public String feelsLikeF;
-    public String visibilityM;
-    public String uvIndex;
-    public String percipitation1Hr;
     public String percipitation24Hr;
 
 
     public Weather(){
         //nothing to see here set variables directly
     }
-
-
 
     @Override
     public String toString(){

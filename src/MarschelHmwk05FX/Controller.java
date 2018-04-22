@@ -62,9 +62,6 @@ public class Controller{
     public ComboBox<String> stateComboBox;
 
     public ComboBoxAutoComplete<String> autoCombo;
-
-
-
     public boolean imageClickValid1 = false;
     public boolean imageClickValid2 = false;
 
@@ -74,33 +71,31 @@ public class Controller{
     public String errorMessage="";
 
 
-
-
-    public void zipSearchButtonRun() {
+    public void zipSearchButtonRun() { // when the search button is clicked
         if(!isZipFieldValid()){
-            validateZipField();
-            if(!isZipFieldValid()){
-                return;
+            validateZipField(); // checks if the contents in the zip field are valid and if not it validates them and
+            if(!isZipFieldValid()){// checks again.
+                return;// if it can't validate it returns to the caller.
             }
         }
 
         String zip = zipField.getText();
-        double zipDouble = Double.parseDouble(zip)/100000;
-        int zipInt = Integer.parseInt(zip);
+        double zipDouble = Double.parseDouble(zip)/100000; // used to incriment the zip code if it gets an error the first time
+        int zipInt = Integer.parseInt(zip);// same as above only for zips without leading 00068
 
-        if(zipInt>99950){
+        if(zipInt>99950){ // max zip code
             zip = "99950";
         }
-        if(zipDouble < 0.00501){
+        if(zipDouble < 0.00501){ // min zip code 00501
             zip = "00501";
         }
 
         String[] searchResults = WeatherDriver.getCityStateFromZip(zip);
 
-        while(searchResults[0].equals("error") && searchResults[1].equals("error")){
-            zipDouble = zipDouble+0.00001;
-            zip = Double.toString(zipDouble);
-            if(zip.length()>7){
+        while(searchResults[0].equals("error") && searchResults[1].equals("error")){ // if it got an error fix it
+            zipDouble = zipDouble+0.00001; // increment zip code
+            zip = Double.toString(zipDouble); // turn it back to a string
+            if(zip.length()>7){// strip the 0. from it and any trailing numbers after 5
                 zip = zip.substring(2,7);
             }else{
                 zip = zip.substring(2);
@@ -108,11 +103,9 @@ public class Controller{
             searchResults = WeatherDriver.getCityStateFromZip(zip);
             errorMessage = "YOUR INITIAL ZIP WAS INVALID. \nShowing results for zip "+zip+ " instead\n\n";
         }
-        String cityFixed = searchResults[0].replaceAll(" ", "_");
-
+        String cityFixed = searchResults[0].replaceAll(" ", "_");// replace spaces with _
 
         String urlString = String.format("http://api.wunderground.com/api/%s/conditions/q/%s/%s.xml",key,searchResults[1],cityFixed);
-
         String urlStringT = "http://www.pcrepairforums.com/misc/school/Maitland.xml";// just generating data from static xml file.
 
         String data = WeatherDriver.readFromURL(urlString);
@@ -124,12 +117,9 @@ public class Controller{
 
         zipOutput.setText(errorMessage);
         zipOutput.appendText(output);
-
-
         errorMessage = "";
         generateRadarImage(zip,1);
         imageClickValid1 = true;
-
 
     }
 
@@ -146,6 +136,7 @@ public class Controller{
             String fixedCity = attemptFixOnCitySearch(city);
             searchResults = WeatherDriver.getCityStateFromCityName(fixedCity,state);
 
+            // error management it will attempt to search for cities that contained the letters you typed
             if(!searchResults[0].equals("error") || !searchResults[1].equals("error")){
                 String tempOutput = String.format("Showing results for city that contained the letters '%s'\n",city);
                 cityOutput.setText(tempOutput);
@@ -160,8 +151,8 @@ public class Controller{
 
         String urlStringT = "http://www.pcrepairforums.com/misc/school/Maitland.xml";
 
-        String data = WeatherDriver.readFromURL(urlString);
-        WeatherDriver.parseXmlString(data);
+        String data = WeatherDriver.readFromURL(urlString);// gets the xml source code
+        WeatherDriver.parseXmlString(data);// parses that data and fills class
 
         String output = WeatherDriver.cityWeather.toStringFormat();
 
@@ -175,6 +166,7 @@ public class Controller{
     }
 
     public static String attemptFixOnCitySearch(String city){
+        // this will fix the city search by adding % in between every letter so it will match letter instead of words
         String result = "";
         ArrayList<String> stringList = new ArrayList<String>();
 
@@ -199,7 +191,7 @@ public class Controller{
     }
 
 
-    public void cityTabOpened(){
+    public void cityTabOpened(){ // runs when city tab is opened
         Image logo2 = new Image("file:src/MarschelHmwk05FX/wuLogo2.png");
         image2.setImage(logo2);
 
@@ -213,7 +205,7 @@ public class Controller{
 
         stateComboBox.setVisibleRowCount(13);
 
-        autoCombo = new ComboBoxAutoComplete<String>(stateComboBox);
+        autoCombo = new ComboBoxAutoComplete<String>(stateComboBox); // creates and manages the combo box
         zipTabOpen = false;
 
 
@@ -223,8 +215,6 @@ public class Controller{
     public void zipTabOpened(){
         Image logo1 = new Image("file:src/MarschelHmwk05FX/wuLogo1.png");
         image1.setImage(logo1);
-
-
         zipSearchButton.setDisable(true);
         zipTabOpen = true;
 
@@ -254,7 +244,7 @@ public class Controller{
         }
     }
 
-    public void radarImageClick(){
+    public void radarImageClick(){ // allows you to open radar image
         if(zipTabOpen == true){
             if(imageClickValid1){
                 try {
@@ -286,11 +276,12 @@ public class Controller{
     }
 
     public void generateRadarImage(String zip, int option){
+        // finds the radar image for a zip code and option sets what tab to show the image in.
         if(zip.equals("")){
             return;
         }
         double zipDouble = 0;
-        try {
+        try {// increment zip if it isn't found the first time
             zipDouble = Double.parseDouble(zip)/100000;
         } catch (NumberFormatException e) {
             System.err.println("Error in generate radar image!");
@@ -301,6 +292,7 @@ public class Controller{
         String radarStationPage = formatStationString(zip);
         String radarStationPageData = WeatherDriver.readFromURL(radarStationPage);
 
+        // increment zip code if it got an error
         while(radarStationPageData.equalsIgnoreCase("error")){
             zipDouble = zipDouble +0.00001;
             zip = Double.toString(zipDouble);
@@ -327,6 +319,7 @@ public class Controller{
 
 
     public void validateZipField(){
+        // fixes zip field to ONLY allow numbers and limit length to 5
         if(!zipField.getText().matches("[0-9]*")){
             String s = zipField.getText();
             String temp = s.replaceAll("[^\\d]", "");
@@ -343,6 +336,7 @@ public class Controller{
     }
 
     public boolean isZipFieldValid(){
+        // checks if the zip field is valid
         if(zipField.getText().matches("[0-9]*") && zipField.getText().length() == 5){
             return true;
         }else{
@@ -351,6 +345,7 @@ public class Controller{
     }
 
     public void zipFieldChanged(){//key released
+        // runs on event
         if(!isZipFieldValid()){
             zipSearchButton.setDisable(true);
             validateZipField();
@@ -363,8 +358,6 @@ public class Controller{
         }else{
             zipSearchButton.setDisable(true);
         }
-
-
     }
 
     public void zipFieldPressed(){
@@ -377,8 +370,8 @@ public class Controller{
 
     }
 
-
     public void cityDataEdit(){
+        // runs when any value is changed in the city tab
         String stateComboBoxValue = stateComboBox.getEditor().getText();
         if(stateComboBoxValue != null){
             boolean flag = false;
@@ -388,9 +381,9 @@ public class Controller{
                     flag = true;
                 }
             }
-            if(flag){
+            if(flag){ // if state is valid it enables the city field
                 cityFieldValid = true;
-            }else{
+            }else{// once city is valid it enables the search button
                 cityFieldValid = false;
                 citySearchButtonValid = false;
             }
@@ -401,7 +394,8 @@ public class Controller{
             cityField.setDisable(true);
         }
 
-        if(stateComboBoxValue !=null && cityField.getText() != null){
+        // I know I could simplify this, but I didn't have the time.
+        if(stateComboBoxValue !=null && cityField.getText() != null){ // checks for null fields
             if(cityFieldValid && cityField.getText().length()>1){
                 citySearchButtonValid = true;
             }else{

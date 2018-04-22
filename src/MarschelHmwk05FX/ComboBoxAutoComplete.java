@@ -14,18 +14,18 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.Window;
 
 public class ComboBoxAutoComplete<T> {
+    // class that controlls the comboBox and allows me to filter the items with each action in the controller
     private ComboBox<T> cmb;
     public String filter = "";
     private ObservableList<T> originalItems;
 
-
-    public ComboBoxAutoComplete(ComboBox<T> cmb) {
+    public ComboBoxAutoComplete(ComboBox<T> cmb) {// constructor
         this.cmb = cmb;
         originalItems = FXCollections.observableArrayList(cmb.getItems());
         cmb.setTooltip(new Tooltip());
     }
 
-    public void keyReleased(KeyEvent e){
+    public void keyReleased(KeyEvent e){ //calls the keypress method
         handleOnKeyPressed(e);
     }
 
@@ -38,6 +38,7 @@ public class ComboBoxAutoComplete<T> {
         KeyCode code = e.getCode();
         cmb.getEditor().end();
 
+        // these set the filter list for each keycode
         if(cmb.getEditor().getText().length() ==0){
             filter = "";
         }
@@ -74,7 +75,7 @@ public class ComboBoxAutoComplete<T> {
             Stream<T> items = cmb.getItems().stream();
             String txtUsr = unaccent(filter.toString().toLowerCase());
 
-
+            // applies the filter to each item in comboBox list.
             items.filter(el -> unaccent(el.toString().toLowerCase()).contains(txtUsr)).forEach(filteredList::add);
 
 //            items.filter(el -> {
@@ -99,7 +100,7 @@ public class ComboBoxAutoComplete<T> {
         cmb.getSelectionModel().select(s);
     }
 
-    private String unaccent(String s) {
+    private String unaccent(String s) { // returns a pattern of the matcher
         String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(temp).replaceAll("");

@@ -18,7 +18,6 @@ public class WeatherDriver {
         //
     }
 
-
     public static Connection connectToDB(String databaseName){
         try {
             String connectString = "jdbc:sqlite:" + databaseName;
@@ -95,7 +94,7 @@ public class WeatherDriver {
             rs.close();
             stmt.close();
         } catch (Exception e) {
-            zipInfo[0]="error";
+            zipInfo[0]="error"; // catches errors and sets the output accordingly so I can handle it in the Controller
             zipInfo[1] = "error";
         }
         closeDB(conn);
@@ -197,7 +196,7 @@ public class WeatherDriver {
     }
 
 
-    public static byte[] getImageSource(String imageLink){
+    public static byte[] getImageSource(String imageLink){ // returns the source of an image from a web link.
         byte[] response = null;
         try {
             URL  url = new URL(imageLink);
@@ -218,7 +217,7 @@ public class WeatherDriver {
         return response;
     }
 
-    public static void createImageFromSource(byte[] source,String fileName){
+    public static void createImageFromSource(byte[] source,String fileName){// creates a new file using the byte source
         try {
             FileOutputStream fos = new FileOutputStream(fileName);
             fos.write(source);
@@ -228,12 +227,11 @@ public class WeatherDriver {
         }
     }
 
-    public static String findWeatherStationId(String data){
+    public static String findWeatherStationId(String data){// connects to a page and uses zip code to find the local
+        // weather station id and returns that id
         String result = "";
         String stationValue = "";
         Document doc = Jsoup.parse(data,"",Parser.htmlParser());
-        String title = doc.title();
-
         try {
             Elements optionTags = doc.select("option");
 
@@ -253,6 +251,7 @@ public class WeatherDriver {
 
 
     public static String getZipFromCityState(String state,String city){
+        // returns the zip code given the city and state
         String result = "";
         Connection conn = connectToDB("zipDatabase.db");
         try {
@@ -274,6 +273,7 @@ public class WeatherDriver {
     }
 
     public static ArrayList<String> createStatesArray(){
+        // populates the states array for the ComboBox
         ArrayList<String> result = new ArrayList<String>();
         Connection conn = connectToDB("zipDatabase.db");
 
@@ -295,6 +295,7 @@ public class WeatherDriver {
 
 
     public static String fullStateToAbb(String fullState){
+        // returns the state abbreviation given the full state name
         String result = "";
         Connection conn = connectToDB("zipDatabase.db");
 
