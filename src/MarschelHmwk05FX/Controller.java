@@ -343,7 +343,7 @@ public class Controller{
             return false;
         }
     }
-
+//
     public void zipFieldChanged(){//key released
         // runs on event
         if(!isZipFieldValid()){
